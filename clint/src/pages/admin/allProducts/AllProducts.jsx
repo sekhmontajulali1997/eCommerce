@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 
 export const AllProducts = () => {
+  const dispatch = useDispatch();
   // for edit, delete, view button
   const [dropDown, setdropDown] = useState(false);
   // for product update
@@ -25,7 +26,6 @@ export const AllProducts = () => {
     setdropDown(dropDown === index ? false : index);
   };
   const { Product } = useSelector(productSelector);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(getAllProducts());
@@ -80,7 +80,7 @@ export const AllProducts = () => {
                 </div>
               </div>
               <div className="nk-block">
-                <div className="card">
+                <div className="card overflow-hidden">
                   <div className=" dataTable-loading no-footer sortable searchable ">
                     <div className="dataTable-top">
                       <div className="dataTable-dropdown">
@@ -194,6 +194,10 @@ export const AllProducts = () => {
                                 return (
                                   <tr key={index}>
                                     <td className="tb-col tb-col-check">
+
+
+
+
                                       <div className="form-check">
                                         <input
                                           className="form-check-input"
@@ -263,9 +267,9 @@ export const AllProducts = () => {
                                           <em className="icon ni ni-more-v" />
                                         </button>
                                         {dropDown === index && (
-                                          <div className=" dropdown-menu dropdown-menu-sm dropdown-menu-end">
+                                          <div className=" dropdown-menu dropdown-menu-sm dropdown-menu-end show">
                                             <div className="dropdown-content py-1">
-                                              <ul className="link-list link-list-hover-bg-primary link-list-md">
+                                              <ul className=" link-list m-0 p-0 link-list-hover-bg-primary link-list-md">
                                                 <li>
                                                   <Link
                                                     to={`/admin-dashboard/edit-product/${item.id}`}

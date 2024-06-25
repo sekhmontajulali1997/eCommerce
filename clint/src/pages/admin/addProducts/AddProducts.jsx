@@ -120,7 +120,7 @@ const {value, checked} = e.target
                 </div>
               </div>
               <div className="nk-block">
-                <form encType="multipart/form-data" onSubmit={handleFormSubmit}>
+                <form encType='multipart/form-data' onSubmit={handleFormSubmit}>
                   <div className="row g-gs">
                     <div className="col-xxl-9">
                       <div className="gap gy-4">

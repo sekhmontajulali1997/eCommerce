@@ -3494,6 +3494,19 @@ fieldset:disabled .btn {
   --bs-dropdown-header-color: #4b5563;
   --bs-dropdown-header-padding-x: 1rem;
   --bs-dropdown-header-padding-y: 0.5rem;
+
+/* position: absolute; inset: auto 0px 0px auto; margin: 0px; transform: translate3d(6.15385px, -32.3077px, 0px) */
+
+
+
+
+
+
+
+
+
+
+
   position: absolute;
   right: 0%;
   z-index: var(--bs-dropdown-zindex);

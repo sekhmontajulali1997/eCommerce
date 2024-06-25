@@ -39,7 +39,7 @@ export const createProduct = createAsyncThunk(
     try {
       const response = await API.post("/product", data);
       
-console.log(data);
+
     return response.data;
     } catch (error) {
       throw new Error(error.response.data.message);
@@ -71,6 +71,23 @@ export const deleteProductApiSlice = createAsyncThunk("allProducr/deleteProductA
     const response = await API.delete(`/product/${id}`)
    
     return{ data:response.data, id: id}
+  }catch(error){
+    throw new Error(error.response.data.message)
+  }
+
+}) 
+
+
+
+// this is productfilter api slice
+
+export const productFilterApiSlice = createAsyncThunk("allProducr/productFilterApiSlice", async(id)=>{
+
+
+  try{
+    const response = await API.get(`/product/filterproducts/${id}`)
+   console.log(response.data);
+    return response.data
   }catch(error){
     throw new Error(error.response.data.message)
   }

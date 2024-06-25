@@ -9,7 +9,7 @@ const AdminDashboard = () => {
         <Row >
           <Col xxl={2}>
             <div >
-              <ul>
+              <ul className="p-0">
                 <li  >
                   <Link to="dashboard" className={uselocation.pathname === "/admin-dashboard/dashboard" ? "active nk-menu-link nk-menu-toggle ": "nk-menu-link "} >
                    

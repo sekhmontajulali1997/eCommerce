@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import slugify from "slugify";
 import { fileUpload } from "../../utiles/Cloudenary.js";
 
-
 const prisma = new PrismaClient();
 // create All authControllers
 /**
@@ -54,30 +53,26 @@ export const createProduct = expressAsyncHandler(async (req, res) => {
     productDiscountPrice,
     productPrice,
     productSku,
+    photo,
     productQty,
   } = req.body;
 
-  const fileData = await fileUpload(req.file.path)
-  
-
+  //const fileData = await fileUpload(req.file.path)
 
   const Product = await prisma.product.create({
     data: {
       productTitle,
-     
       categoryIDs,
       productDescription,
       productPrice: parseInt(productPrice),
-      photo: fileData.secure_url,
+      photo,
       productDiscountPrice: parseInt(productDiscountPrice),
       productSku,
       productQty: parseInt(productQty),
     },
   });
   res.status(200).json({ Product, message: " Product created" });
-
-
-}); 
+});
 
 //});
 
@@ -156,3 +151,64 @@ export const updateProduct = expressAsyncHandler(async (req, res) => {
   });
   res.status(200).json({ updateProduct, message: " Product updated" });
 });
+
+/**
+ * @description : this is a  filters Product controller
+ * @route : /api/v1/auth/Product/filterproducts
+ * @method: post
+ * @access: public
+ */
+
+export const productsFilters = expressAsyncHandler(async (req, res) => {
+  const { ids } = req.params;
+
+  if (!ids) {
+    return res.status(400).json({ error: "No category IDs provided" });
+  }
+
+  const categoryIdsArray = ids.split(",");
+
+  const products = await prisma.product.findMany({
+    where: {
+      categoryIDs: {
+        hasSome: categoryIdsArray,
+      },
+    },
+  });
+
+  res.status(200).json({ products, message: "Products filtered successfully" });
+});
+
+export const productsPagination = expressAsyncHandler(async (req, res) => {
+  const {page} = Number(req.params) || 1;
+  const {limit} = Number(req.params) || 2;
+
+  if (page <= 0) {
+    page = 1;
+  }
+  if (limit <= 0 || limit > 100) {
+    limit = 2;
+  }
+  const skip = (page - 1) * limit;
+
+  const productsFilters = await prisma.product.findMany({
+    skip: skip,
+    take: limit,
+  });
+  const totalProducts = await prisma.product.count();
+
+  const totalPages = Math.ceil(totalProducts / limit)
+
+  res.status(200).json({totalProducts, caurantPages: page , limit: limit  });
+});
+
+
+//
+
+
+export const productsCount = expressAsyncHandler(async (req, res) => {
+
+  const totalProducts = await prisma.product.count();
+  res.status(200).json(totalProducts);
+
+})

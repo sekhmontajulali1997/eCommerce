@@ -4,6 +4,7 @@ import {
   deleteProductApiSlice,
   getAllProducts,
   getSingleProducts,
+  productFilterApiSlice,
   updateProductApiSlice,
 } from "./productsApiSlice";
 
@@ -58,6 +59,7 @@ export const productsSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.lodaing = false;
+      
         state.Product = action.payload;
         state.message = action.payload.message;
       })
@@ -98,7 +100,21 @@ export const productsSlice = createSlice({
       .addCase(updateProductApiSlice.rejected, (state, action) => {
         state.lodaing = false;
         state.error = action.error.message;
-      });
+      })
+       // this is   filters products
+       .addCase(productFilterApiSlice.pending, (state) => {
+        state.lodaing = true;
+      })
+      .addCase(productFilterApiSlice.fulfilled, (state, action) => {
+        state.lodaing = false;
+      
+        state.Product = action.payload.products;
+        state.message = action.payload.message;
+      })
+      .addCase(productFilterApiSlice.rejected, (state, action) => {
+        state.lodaing = false;
+        state.error = action.error.message;
+      })
   },
 });
 
