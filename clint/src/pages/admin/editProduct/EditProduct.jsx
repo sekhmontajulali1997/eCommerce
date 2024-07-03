@@ -1,54 +1,64 @@
-import { useEffect } from "react";
+import { useEffect,  } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+
   getSingleProducts,
   updateProductApiSlice,
 } from "../../../features/products/productsApiSlice";
 //import { setEmtyMessage } from "../../../features/products/productsSlice";
-import { productSelector, setEmtyMessage } from "../../../features/products/productsSlice";
+import {
+  productSelector,
+ // setEmtyMessage,
+} from "../../../features/products/productsSlice";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import useForm from "../../../../hooks/useFormHooks/useForm";
+
 import { getCategoryApiSlice } from "../../../features/category/categoryApiSlice";
 import { categorySelector } from "../../../features/category/categorySlice";
+import useForm from "../../../hooks/useFormHooks/useForm";
+import { useState } from "react";
 
 const EditProduct = () => {
-  const { id } = useParams();
+  const [ProductImg, setProductImg] = useState(null);
+ const dispatch = useDispatch();
+  const {id}  = useParams();
+  
 
-  const navigator = useNavigate()
+  const navigator = useNavigate();
 
   //const [editProduct, setEditProduct] = useState()
-  const { Product } = useSelector(productSelector);
-  const { category } = useSelector(categorySelector);
+  const { singleProduct } = useSelector(productSelector);
 
-  const { input, setInput,  } = useForm({
+
+  const { category } = useSelector(categorySelector);
+//get category
+const [categorys, setcategorys] = useState(singleProduct?.categoryIDs|| []);
+
+// handleInputcategory
+const handleInputcategory = (e) =>{
+
+  const {value, checked} = e.target;
+  if (checked) {
+    setcategorys((prevCategories)=>([...prevCategories, value]))
+   
+  }else{
+    setcategorys( categorys.filter((item) => item !== value));
+  }
+
+}
+//get category end 
+  const { input,setInput, handleInputChange } = useForm({
     productTitle: "",
     productPrice: "",
     productDiscountPrice: "",
+    photo: "",
     productSku: "",
     productQty: "",
     productDescription: "",
     categoryIDs: [],
   });
-  const dispatch = useDispatch();
 
-
-  const handleInputChange = (e) => {
-    if (e.target.name === "categoryIDs") {
-      const { value, checked } = e.target;
-
-      let getCategory = { ...input };
-      if (checked) {
-        getCategory.categoryIDs.push(value)        
-      }else{
-        getCategory.categoryIDs = getCategory.categoryIDs.filter((item) => item !== value)
-      }
-      setInput(getCategory);
-    } else {
-      setInput((prevState) => ({
-        ...prevState,
-        [e.target.name]: e.target.value,
-      }));
-    }
+  const handleUploadPhoto = (e) => {
+    setProductImg(e.target.files[0]);
   };
 
   // handleInputUpdateProduct
@@ -56,32 +66,41 @@ const EditProduct = () => {
   const handleInputUpdateProduct = (e) => {
     e.preventDefault();
 
-    dispatch(updateProductApiSlice(input));
-    navigator("/admin-dashboard/all-products")
-
-
+    dispatch(updateProductApiSlice({...input, categoryIDs : categorys, photo: ProductImg}));
+    navigator("/admin-dashboard/all-products");
   };
+  useEffect(() => {
+    if (singleProduct?.categoryIDs) {
+      setcategorys(singleProduct.categoryIDs);
+    }
+  }, [singleProduct]);
 
-
-
-
-
-
-
-
-  
   useEffect(() => {
     dispatch(getCategoryApiSlice());
-    dispatch(getSingleProducts({ id }));
-    if (id) {
-      const getSingleProducts = Product.filter((item) => item.id === id);
-      setInput(getSingleProducts[0]);
-      dispatch(setEmtyMessage())
-    }
-  }, [dispatch]);
+  
+  },[dispatch]);
 
-  //dispatch(setEmtyMessage());
 
+    
+useEffect(()=>{
+  
+  dispatch(getSingleProducts(id))
+ 
+},[dispatch,id]); 
+
+useEffect(() => {
+  if (singleProduct && singleProduct.id === id) {
+ 
+  setInput(singleProduct);
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [singleProduct, id]);
+ 
+// useEffect(() => {
+//   if (singleProduct?.categoryIDs) {
+//     setcategorys(singleProduct.categoryIDs);
+//   }
+// }, [singleProduct]);
   return (
     <>
       <div className="nk-content">
@@ -151,7 +170,7 @@ const EditProduct = () => {
                                       <input
                                         type="text"
                                         name="productTitle"
-                                        value={input && input.productTitle}
+                                        value={input.productTitle}
                                         onChange={handleInputChange}
                                         className="form-control"
                                         id="productname"
@@ -172,7 +191,7 @@ const EditProduct = () => {
                                       <input
                                         type="text"
                                         name="productPrice"
-                                        value={input && input.productPrice}
+                                        value={input.productPrice}
                                         onChange={handleInputChange}
                                         className="form-control"
                                         id="baseprice"
@@ -193,7 +212,7 @@ const EditProduct = () => {
                                       <input
                                         name="productDiscountPrice"
                                         value={
-                                          input && input.productDiscountPrice
+                                          input.productDiscountPrice
                                         }
                                         onChange={handleInputChange}
                                         type="text"
@@ -213,7 +232,7 @@ const EditProduct = () => {
                                     <div className="form-control-wrap">
                                       <input
                                         name="productSku"
-                                        value={input && input.productSku}
+                                        value={input.productSku}
                                         onChange={handleInputChange}
                                         type="text"
                                         className="form-control"
@@ -247,7 +266,7 @@ const EditProduct = () => {
                                       <div className="form-control-wrap">
                                         <input
                                           name="productQty"
-                                          value={input && input.productQty}
+                                          value={input.productQty}
                                           onChange={handleInputChange}
                                           type="text"
                                           className="form-control"
@@ -276,7 +295,7 @@ const EditProduct = () => {
                                       <textarea
                                         name="productDescription"
                                         value={
-                                          input && input.productDescription
+                                          input.productDescription
                                         }
                                         onChange={handleInputChange}
                                         className="form-control"
@@ -385,16 +404,23 @@ const EditProduct = () => {
                                       <img
                                         id="image-result"
                                         className="w-100 h-100"
-                                        src="../images/avatar/avatar-placeholder.jpg"
+                                        src={
+                                          ProductImg ? URL.createObjectURL(
+                                            ProductImg
+                                          ) : input.photo
+                                        }
                                         alt="avatar"
                                       />
                                     </div>
                                     <div className="pt-3">
                                       <input
                                         className="upload-image"
+                                        onChange={handleUploadPhoto}
                                         data-target="image-result"
                                         id="change-avatar"
+                                        name="photo"
                                         type="file"
+                                       
                                         max={1}
                                         hidden
                                       />
@@ -431,7 +457,8 @@ const EditProduct = () => {
                                               type="checkbox"
                                               name="categoryIDs"
                                               value={item.id}
-                                              onChange={handleInputChange}
+                                              onChange={handleInputcategory}
+                                              checked={categorys.includes(item.id)}
                                             />
                                             <label
                                               style={{ marginLeft: "10px" }}

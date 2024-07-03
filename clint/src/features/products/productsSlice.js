@@ -2,8 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   createProduct,
   deleteProductApiSlice,
+
   getAllProducts,
   getSingleProducts,
+  productCountApiSlice,
   productFilterApiSlice,
   updateProductApiSlice,
 } from "./productsApiSlice";
@@ -13,6 +15,11 @@ export const productsSlice = createSlice({
 
   initialState: {
     Product: [],
+    currentPage: 1,
+    singleProduct:null,
+    totalPages: 1,
+    itemsPerPage: 2,
+    ProductCount: null,
     message: null,
     error: null,
     lodaing: false,
@@ -22,6 +29,9 @@ export const productsSlice = createSlice({
     setEmtyMessage: (state) => {
       state.message = null;
       state.error = null;
+    },
+    setCurrentPage(state, action) {
+      state.currentPage = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -34,20 +44,24 @@ export const productsSlice = createSlice({
       .addCase(getAllProducts.fulfilled, (state, action) => {
         state.lodaing = false;
         state.Product = action.payload.Product;
+        state.ProductCount = action.payload.totalProducts;
+        state.totalPages = action.payload.totalPages;
       })
       // this get products
       .addCase(getAllProducts.rejected, (state, action) => {
         state.lodaing = false;
         state.error = action.error.message;
       })
+
+
       // this get single products
       .addCase(getSingleProducts.pending, (state) => {
         state.lodaing = true;
       })
       .addCase(getSingleProducts.fulfilled, (state, action) => {
         state.lodaing = false;
-
-        state.Product = action.payload;
+        //console.log(action.payload);
+        state.singleProduct = action.payload.singleProduct;
       })
       .addCase(getSingleProducts.rejected, (state, action) => {
         state.lodaing = false;
@@ -59,7 +73,7 @@ export const productsSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.lodaing = false;
-      
+
         state.Product = action.payload;
         state.message = action.payload.message;
       })
@@ -88,6 +102,7 @@ export const productsSlice = createSlice({
       })
       .addCase(updateProductApiSlice.fulfilled, (state, action) => {
         state.lodaing = false;
+        console.log(action.payload);
         state.Product = state.Product?.map((item) => {
           if (item.id === action.payload.id) {
             return action.payload.data.updateProduct;
@@ -101,13 +116,13 @@ export const productsSlice = createSlice({
         state.lodaing = false;
         state.error = action.error.message;
       })
-       // this is   filters products
-       .addCase(productFilterApiSlice.pending, (state) => {
+      // this is   filters products
+      .addCase(productFilterApiSlice.pending, (state) => {
         state.lodaing = true;
       })
       .addCase(productFilterApiSlice.fulfilled, (state, action) => {
         state.lodaing = false;
-      
+
         state.Product = action.payload.products;
         state.message = action.payload.message;
       })
@@ -115,6 +130,20 @@ export const productsSlice = createSlice({
         state.lodaing = false;
         state.error = action.error.message;
       })
+      // this is    products count
+      .addCase(productCountApiSlice.pending, (state) => {
+        state.lodaing = true;
+      })
+      .addCase(productCountApiSlice.fulfilled, (state, action) => {
+        state.lodaing = false;
+
+        state.count = action.payload.totalProducts;
+        state.message = action.payload.message;
+      })
+      .addCase(productCountApiSlice.rejected, (state, action) => {
+        state.lodaing = false;
+        state.error = action.error.message;
+      });
   },
 });
 
@@ -123,6 +152,7 @@ export const productsSlice = createSlice({
 export const productSelector = (state) => state.Products;
 // export actions
 export const { setEmtyMessage } = productsSlice.actions;
+export const { setCurrentPage } = productsSlice.actions;
 //export reducers
 
 export default productsSlice.reducer;

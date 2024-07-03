@@ -4,12 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 //import { getSingleCategory } from "../../../features/products/productsApiSlice";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import useForm from "../../../../hooks/useFormHooks/useForm";
 import {
   getSingleCategory,
   updateCategory,
 } from "../../../features/category/categoryApiSlice";
 import { categorySelector } from "../../../features/category/categorySlice";
+import useForm from "../../../hooks/useFormHooks/useForm";
 
 const EditCategory = () => {
   const { id } = useParams();

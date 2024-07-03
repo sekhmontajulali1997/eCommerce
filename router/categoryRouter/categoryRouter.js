@@ -9,7 +9,7 @@ const categoryRouter = express.Router();
 // create route
 categoryRouter.get("/", getcreateCategory);
 categoryRouter.get("/single_category/:id", getSingleCategory);
-categoryRouter.post("/",UserMulter, createcreateCategory);
+categoryRouter.post("/", createcreateCategory);
 categoryRouter.delete("/delete_many/:id", deleteMultiplecreateCategory);
 categoryRouter.delete("/:id", deletecreateCategory);
 categoryRouter.patch("/:id", updatecreateCategory);

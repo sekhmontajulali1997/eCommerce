@@ -1,7 +1,11 @@
 import expressAsyncHandler from "express-async-handler";
 import { PrismaClient } from "@prisma/client";
 import slugify from "slugify";
-import { fileUpload } from "../../utiles/Cloudenary.js";
+import {
+  fileDelete,
+  fileUpload,
+  getPublicIdFromUrl,
+} from "../../utiles/Cloudenary.js";
 
 const prisma = new PrismaClient();
 // create All authControllers
@@ -13,8 +17,32 @@ const prisma = new PrismaClient();
  */
 
 export const getProduct = expressAsyncHandler(async (req, res) => {
-  const Product = await prisma.Product.findMany({});
-  res.status(200).json({ Product, message: " here is your all Product" });
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 16;
+
+  if (page <= 0) {
+    page = 1;
+  }
+  if (limit <= 0 || limit > 100) {
+    limit = 16;
+  }
+  const skip = (page - 1) * limit;
+
+  const Product = await prisma.Product.findMany({
+    skip: skip,
+    take: limit,
+  });
+  const totalProducts = await prisma.product.count();
+
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  //const Product = await prisma.Product.findMany({});
+  res.status(200).json({
+    Product,
+    totalProducts,
+    totalPages,
+    message: " here is your all Product",
+  });
 });
 /**
  * @description : this is a Product get controller
@@ -25,7 +53,7 @@ export const getProduct = expressAsyncHandler(async (req, res) => {
 
 export const getSingleProduct = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
-  const singleProduct = await prisma.product.findMany({
+  const singleProduct = await prisma.product.findUnique({
     where: {
       id,
     },
@@ -43,9 +71,6 @@ export const getSingleProduct = expressAsyncHandler(async (req, res) => {
  */
 
 export const createProduct = expressAsyncHandler(async (req, res) => {
-  console.log(req.body);
-  console.log(req.files);
-
   const {
     productTitle,
     categoryIDs,
@@ -53,11 +78,11 @@ export const createProduct = expressAsyncHandler(async (req, res) => {
     productDiscountPrice,
     productPrice,
     productSku,
-    photo,
+
     productQty,
   } = req.body;
 
-  //const fileData = await fileUpload(req.file.path)
+  const fileData = await fileUpload(req.file.path);
 
   const Product = await prisma.product.create({
     data: {
@@ -65,7 +90,7 @@ export const createProduct = expressAsyncHandler(async (req, res) => {
       categoryIDs,
       productDescription,
       productPrice: parseInt(productPrice),
-      photo,
+      photo: fileData ? fileData.secure_url : "",
       productDiscountPrice: parseInt(productDiscountPrice),
       productSku,
       productQty: parseInt(productQty),
@@ -88,13 +113,13 @@ export const deleteMultipleProduct = expressAsyncHandler(async (req, res) => {
 
   const idArray = Array.isArray(id) ? id : id.split(",");
 
-  const deleteProduct = await prisma.product.deleteMany({
+  const deleteMultipleProduct = await prisma.product.deleteMany({
     where: {
       id: { in: idArray },
     },
   });
 
-  res.status(200).json({ deleteProduct, message: " Product deleted" });
+  res.status(200).json({ deleteMultipleProduct, message: " Product deleted" });
 });
 /**
  * @description : this is a Product delete Product controller
@@ -103,17 +128,69 @@ export const deleteMultipleProduct = expressAsyncHandler(async (req, res) => {
  * @access: public
  */
 
+// export const deleteProduct = expressAsyncHandler(async (req, res) => {
+//   const { id } = req.params;
+
+// const product = await prisma.product.findUnique({ where: { id } });
+// const public_id = getPublicIdFromUrl(product.photo);
+
+//   const deleteProduct = await prisma.product.delete({
+//     where: {
+//       id,
+//     },
+//   });
+//   if (deleteProduct) {
+
+//     await fileDelete(public_id)
+
+//   }
+
+//   res.status(200).json({ deleteProduct, message: " Product deleted" });
+// });
+
+// export const deleteProduct = expressAsyncHandler(async (req, res) => {
+//   const { id } = req.params;
+//   const product = await prisma.product.findUnique({ where: { id } });
+//   const public_id = getPublicIdFromUrl(product.photo);
+
+//   const deleteProduct = await prisma.product.delete({ where: { id } }); // Add await here
+//   if (deleteProduct) {
+//     await fileDelete(public_id); // Delete the previous image
+//   }
+
+//   res.status(200).json({ deleteProduct, message: "Product deleted" });
+// });
+
+
+
+
+
 export const deleteProduct = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const deleteProduct = await prisma.product.delete({
-    where: {
-      id,
-    },
-  });
+  
+    const product = await prisma.product.findUnique({ where: { id } });
 
-  res.status(200).json({ deleteProduct, message: " Product deleted" });
+    const public_id = getPublicIdFromUrl(product.photo);
+   
+
+    const deletedProduct = await prisma.product.delete({ where: { id } });
+
+    if (deletedProduct) {
+      await fileDelete(public_id); // Delete the image from Cloudinary
+    }
+
+    res.status(200).json({ deletedProduct, message: 'Product deleted' });
+   
 });
+
+
+
+
+
+
+
+
 
 /**
  * @description : this is a Product update controller
@@ -124,12 +201,23 @@ export const deleteProduct = expressAsyncHandler(async (req, res) => {
 
 export const updateProduct = expressAsyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  let fileData;
+
+  if (req.file) {
+    const product = await prisma.product.findUnique({ where: { id } });
+    const public_id = getPublicIdFromUrl(product.photo);
+    if (product.photo) {
+      await fileDelete(public_id); // Delete the previous image
+    }
+    fileData = await fileUpload(req.file.path);  
+  }
+
   const {
     productTitle,
     categoryIDs,
     slug,
     productDescription,
-    photo,
     productDiscountPrice,
     productPrice,
     productSku,
@@ -143,7 +231,7 @@ export const updateProduct = expressAsyncHandler(async (req, res) => {
       categoryIDs,
       productDescription,
       productPrice: parseInt(productPrice),
-      photo,
+      photo: fileData ? fileData.secure_url : undefined,
       productDiscountPrice: parseInt(productDiscountPrice),
       productSku,
       productQty: parseInt(productQty),
@@ -179,36 +267,43 @@ export const productsFilters = expressAsyncHandler(async (req, res) => {
   res.status(200).json({ products, message: "Products filtered successfully" });
 });
 
-export const productsPagination = expressAsyncHandler(async (req, res) => {
-  const {page} = Number(req.params) || 1;
-  const {limit} = Number(req.params) || 2;
+//this is pagination code in using sparate contaroller start
 
-  if (page <= 0) {
-    page = 1;
-  }
-  if (limit <= 0 || limit > 100) {
-    limit = 2;
-  }
-  const skip = (page - 1) * limit;
+// export const productsPagination = expressAsyncHandler(async (req, res) => {
+//   const page = Number(req.params.page) || 1;
+//   const limit= Number(req.params.limit) || 2;
 
-  const productsFilters = await prisma.product.findMany({
-    skip: skip,
-    take: limit,
-  });
-  const totalProducts = await prisma.product.count();
+//   if (page <= 0) {
+//     page = 1;
+//   }
+//   if (limit <= 0 || limit > 100) {
+//     limit = 2;
+//   }
+//   const skip = (page - 1) * limit;
 
-  const totalPages = Math.ceil(totalProducts / limit)
+//   const productsFilters = await prisma.product.findMany({
+//     skip: skip,
+//     take: limit,
+//   });
+//   const totalProducts = await prisma.product.count();
 
-  res.status(200).json({totalProducts, caurantPages: page , limit: limit  });
-});
+//   const totalPages = Math.ceil(totalProducts / limit)
 
+//   res.status(200).json({productsFilters,totalProducts, caurantPages: page , limit: limit  });
+// });
 
-//
+// //
 
+//this is pagination code in using sparate contaroller end
 
-export const productsCount = expressAsyncHandler(async (req, res) => {
+//this is products count code in using sparate contaroller start
 
-  const totalProducts = await prisma.product.count();
-  res.status(200).json(totalProducts);
+// export const productsCount = expressAsyncHandler(async (req, res) => {
 
-})
+//   const totalProducts = await prisma.product.count();
+//   console.log(totalProducts);
+//   res.status(200).json(totalProducts);
+
+// })
+
+//this is products count code in using sparate contaroller end

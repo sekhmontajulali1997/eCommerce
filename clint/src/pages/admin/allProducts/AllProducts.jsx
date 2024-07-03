@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   deleteProductApiSlice,
   getAllProducts,
+  //getAllProducts,
 } from "../../../features/products/productsApiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -12,6 +13,27 @@ import {
 import { Link } from "react-router-dom";
 
 export const AllProducts = () => {
+  // this productSelector from products slice
+  const { Product, totalPages } = useSelector(productSelector);
+  //for pagination using useState Hook and same pagination on shop i am createing with redux actions
+
+  const [currentPage, setCurrentPage] = useState(1);
+  //handlePageChange
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const dispatch = useDispatch();
   // for edit, delete, view button
   const [dropDown, setdropDown] = useState(false);
@@ -25,12 +47,11 @@ export const AllProducts = () => {
   const dropdownHandller = (index) => {
     setdropDown(dropDown === index ? false : index);
   };
-  const { Product } = useSelector(productSelector);
 
   useEffect(() => {
-    dispatch(getAllProducts());
+    dispatch(getAllProducts({ page: currentPage }));
     dispatch(setEmtyMessage());
-  }, [dispatch]);
+  }, [dispatch,currentPage]);
   return (
     <>
       <div className="nk-content">
@@ -41,6 +62,7 @@ export const AllProducts = () => {
                 <div className="nk-block-head-between flex-wrap gap g-2">
                   <div className="nk-block-head-content">
                     <h2 className="nk-block-title">Products</h2>
+                    <h2 className="nk-block-title"></h2>
                     <nav>
                       <ol className="breadcrumb breadcrumb-arrow mb-0">
                         <li className="breadcrumb-item">
@@ -194,10 +216,6 @@ export const AllProducts = () => {
                                 return (
                                   <tr key={index}>
                                     <td className="tb-col tb-col-check">
-
-
-
-
                                       <div className="form-check">
                                         <input
                                           className="form-check-input"
@@ -210,26 +228,26 @@ export const AllProducts = () => {
                                     <td className="tb-col">
                                       <div className="media-group">
                                         <div className="media media-md media-middle">
-                                          <img src={item.photo} />
+                                          <img src={item?.photo} />
                                         </div>
                                         <div className="media-text">
                                           <Link
                                             to="edit-product.html"
                                             className="title"
                                           >
-                                            {item.productTitle}
+                                            {item?.productTitle}
                                           </Link>
                                         </div>
                                       </div>
                                     </td>
                                     <td className="tb-col tb-col-md">
-                                      <span>{item.productSku}</span>
+                                      <span>{item?.productSku}</span>
                                     </td>
                                     <td className="tb-col">
-                                      <span>{item.productQty}</span>
+                                      <span>{item?.productQty}</span>
                                     </td>
                                     <td className="tb-col tb-col-md">
-                                      <span>${item.productPrice}</span>
+                                      <span>${item?.productPrice}</span>
                                     </td>
                                     <td className="tb-col tb-col-md">
                                       <ul className="rating">
@@ -272,7 +290,7 @@ export const AllProducts = () => {
                                               <ul className=" link-list m-0 p-0 link-list-hover-bg-primary link-list-md">
                                                 <li>
                                                   <Link
-                                                    to={`/admin-dashboard/edit-product/${item.id}`}
+                                                    to={`/admin-dashboard/edit-product/${item?.id}`}
                                                   >
                                                     <em className="icon ni ni-edit" />
                                                     <span>Edit</span>
@@ -283,7 +301,7 @@ export const AllProducts = () => {
                                                     to="#"
                                                     onClick={() =>
                                                       handleDeleteProduct(
-                                                        item.id
+                                                        item?.id
                                                       )
                                                     }
                                                   >
@@ -316,17 +334,39 @@ export const AllProducts = () => {
                       </div>
                       <nav className="dataTable-pagination">
                         <ul className="dataTable-pagination-list">
-                          <li className="active">
-                            <Link to="#" data-page={1}>
-                              1
-                            </Link>
-                          </li>
-                          <li className="">
+                          <li
+                            className="pager"
+                            onClick={handlePreviousPage}
+                            disabled={currentPage === 1}
+                          >
                             <Link to="#" data-page={2}>
-                              2
+                              <em className="icon ni ni-chevron-left" />
                             </Link>
                           </li>
-                          <li className="pager">
+
+                          {Array.from({ length: totalPages }, (_, index) => {
+                            return (
+                              <li
+                                key={index + 1}
+                                className={
+                                  currentPage === index + 1 ? "active" : ""
+                                }
+                              >
+                                <Link
+                                  to="#"
+                                  onClick={() => handlePageChange(index + 1)}
+                                >
+                                  {index + 1}
+                                </Link>
+                              </li>
+                            );
+                          })}
+
+                          <li
+                            className="pager"
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}
+                          >
                             <Link to="#" data-page={2}>
                               <em className="icon ni ni-chevron-right" />
                             </Link>

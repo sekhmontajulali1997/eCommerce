@@ -7,9 +7,12 @@ import { API } from "../../../utils/axiosApi/api";
 //this is get all products
 export const getAllProducts = createAsyncThunk(
   "allProducts/getAllProducts",
-  async () => {
+  async ({page} ) => {
+    console.log(page);
+   
     try {
-      const response = await API.get("/product");
+      const response = await API.get(`/product?page=${page}`);
+     
 
       return response.data;
     } catch (error) {
@@ -17,14 +20,15 @@ export const getAllProducts = createAsyncThunk(
     }
   }
 );
+
 //this is get single products
 export const getSingleProducts = createAsyncThunk(
   "allProducts/getSingleProducts",
   async (params) => {
     try {
-      const response = await API.get(`/product/getsingleproduct/${params.id}`);
-
-      return response.data.singleProduct;
+      const response = await API.get(`/product/getsingleproduct/${params}`);
+      
+      return response.data;
     } catch (error) {
       throw new Error(error.response.data.message);
     }
@@ -37,10 +41,13 @@ export const createProduct = createAsyncThunk(
   "allProduct/createProduct ",
   async (data) => {
     try {
-      const response = await API.post("/product", data);
-      
+      const response = await API.post("/product", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    return response.data;
+      return response.data;
     } catch (error) {
       throw new Error(error.response.data.message);
     }
@@ -52,8 +59,13 @@ export const createProduct = createAsyncThunk(
 export const updateProductApiSlice = createAsyncThunk(
   "allProduct/updateProductApiSlice",
   async (data) => {
+    console.log(data);
     try {
-      const response = await API.patch(`/product/${data.id}`, data);
+      const response = await API.patch(`/product/${data.id}`, data,{
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       return { data: response.data, id: data.id };
     } catch (error) {
@@ -64,32 +76,45 @@ export const updateProductApiSlice = createAsyncThunk(
 
 // this is delete product api slice
 
-export const deleteProductApiSlice = createAsyncThunk("allProducr/deleteProductApiSlice", async(id)=>{
+export const deleteProductApiSlice = createAsyncThunk(
+  "allProducr/deleteProductApiSlice",
+  async (id) => {
+    try {
+      const response = await API.delete(`/product/${id}`);
 
-
-  try{
-    const response = await API.delete(`/product/${id}`)
-   
-    return{ data:response.data, id: id}
-  }catch(error){
-    throw new Error(error.response.data.message)
+      return { data: response.data, id: id };
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
   }
-
-}) 
-
-
+);
 
 // this is productfilter api slice
 
-export const productFilterApiSlice = createAsyncThunk("allProducr/productFilterApiSlice", async(id)=>{
+export const productFilterApiSlice = createAsyncThunk(
+  "allProducr/productFilterApiSlice",
+  async (id) => {
+    try {
+      const response = await API.get(`/product/filterproducts/${id}`);
 
-
-  try{
-    const response = await API.get(`/product/filterproducts/${id}`)
-   console.log(response.data);
-    return response.data
-  }catch(error){
-    throw new Error(error.response.data.message)
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
   }
+);
 
-}) 
+// this is productCount api slice
+
+export const productCountApiSlice = createAsyncThunk(
+  "allProducr/productCountApiSlice",
+  async () => {
+    try {
+      const response = await API.get(`/product/product-count`);
+
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+  }
+);

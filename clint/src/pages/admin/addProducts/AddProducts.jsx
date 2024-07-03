@@ -1,18 +1,19 @@
 import { Link } from "react-router-dom";
-import useForm from "../../../../hooks/useFormHooks/useForm";
+
 import { useDispatch, useSelector } from "react-redux";
 import { createProduct } from "../../../features/products/productsApiSlice";
 
 import { useEffect, useState } from "react";
 import { getCategoryApiSlice } from "../../../features/category/categoryApiSlice";
 import { categorySelector } from "../../../features/category/categorySlice";
+import useForm from "../../../hooks/useFormHooks/useForm";
+import { setEmtyMessage } from "../../../features/products/productsSlice";
 
 const AddProducts = () => {
   const { category } = useSelector(categorySelector);
   //  for uploadProductPhoto
 
   const [ProductImg, setProductImg] = useState(null);
-
 
   const { input, formReset, handleInputChange } = useForm({
     productTitle: "",
@@ -27,26 +28,20 @@ const AddProducts = () => {
   const [categorys, setcategory] = useState([]);
 
   const handleCategoryChange = (e) => {
-const {value, checked} = e.target
+    const { value, checked } = e.target;
 
     if (checked) {
       setcategory([...categorys, value]);
     } else {
       setcategory(categorys.filter((item) => item !== value));
     }
-    
-
   };
 
   // for photo upload
 
   const handleUploadPhoto = (e) => {
     setProductImg(e.target.files[0]);
-
-    
   };
-
-
 
   const dispatch = useDispatch();
   // handle form submit
@@ -54,18 +49,11 @@ const {value, checked} = e.target
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-     // const formData = new FormData()
-    //     formDate.append("productTitle", input.productTitle);
-    //     formDate.append("productPrice", input.productPrice);
-    //     formDate.append("productDiscountPrice", input.productDiscountPrice);
-    //     formDate.append("productSku", input.productSku);
-    //     formDate.append("productQty", input.productQty);
-    //     formDate.append("productDescription", input.productDescription);
-    //formData.append("photo", ProductImg );
-    // // Append each category ID separately
-    //     input.categoryIDs.map(id =>formDate.append("categoryIDs", id));
-    dispatch(createProduct({ ...input, categoryIDs: categorys, photo:  ProductImg}));
+    dispatch(
+      createProduct({ ...input, categoryIDs: categorys, photo: ProductImg })
+    );
     formReset();
+    dispatch(setEmtyMessage())
   };
 
   useEffect(() => {
@@ -120,7 +108,7 @@ const {value, checked} = e.target
                 </div>
               </div>
               <div className="nk-block">
-                <form encType='multipart/form-data' onSubmit={handleFormSubmit}>
+                <form encType="multipart/form-data" onSubmit={handleFormSubmit}>
                   <div className="row g-gs">
                     <div className="col-xxl-9">
                       <div className="gap gy-4">
@@ -337,11 +325,7 @@ const {value, checked} = e.target
                         <div className="gap-col">
                           <ul className="d-flex align-items-center gap g-3">
                             <li>
-                              <button
-                                
-                                type="submit"
-                                className="btn btn-primary"
-                              >
+                              <button type="submit" className="btn btn-primary">
                                 Create Product
                               </button>
                             </li>
@@ -389,8 +373,6 @@ const {value, checked} = e.target
                                         type="file"
                                         max={1}
                                         name="photo"
-                                        
-                                        
                                         onChange={handleUploadPhoto}
                                         hidden
                                       />

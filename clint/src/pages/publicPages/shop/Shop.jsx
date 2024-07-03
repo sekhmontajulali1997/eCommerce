@@ -5,15 +5,20 @@ import { getCategoryApiSlice } from "../../../features/category/categoryApiSlice
 import { categorySelector } from "../../../features/category/categorySlice";
 import {
   getAllProducts,
+  //productProductCountApiSlice,
   productFilterApiSlice,
 } from "../../../features/products/productsApiSlice";
-import { productSelector } from "../../../features/products/productsSlice";
+import { productSelector, setCurrentPage } from "../../../features/products/productsSlice";
 
 const Shop = () => {
   // category selector
   const { category } = useSelector(categorySelector);
   // product selector
-  const { Product } = useSelector(productSelector);
+  const { Product,ProductCount, lodaing, currentPage, totalPages, itemsPerPage, } = useSelector(productSelector);
+
+
+
+  
   // dispatch
   const dispatch = useDispatch();
 
@@ -35,16 +40,39 @@ const Shop = () => {
     }
   };
   useEffect(() => {
-   
+  
 
     if (categoryFilter.length > 0) {
       dispatch(productFilterApiSlice(categoryFilter));
     }else{
-      dispatch(getAllProducts());
+      dispatch(getAllProducts({ page: currentPage, limit: itemsPerPage }));
     }
     
     dispatch(getCategoryApiSlice());
-  }, [dispatch, categoryFilter]);
+    //dispatch(productProductCountApiSlice())
+  }, [dispatch, categoryFilter, currentPage,itemsPerPage]);
+
+
+  const handlePageChange = (page) => {
+    dispatch(setCurrentPage(page));
+};
+
+const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      dispatch(setCurrentPage(currentPage + 1));
+    }
+};
+
+const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      dispatch(setCurrentPage(currentPage - 1));
+    }
+};
+
+
+
+
+  
   return (
     <>
       <div className="shop-wrap py-120">
@@ -744,7 +772,7 @@ const Shop = () => {
                               </p>
                               <p className="price">
                                 <span>${pItem.productPrice}</span>$
-                                {pItem.productDiscountPrice}
+                                {pItem.productDisProductCountPrice}
                               </p>
                               <div className="star">
                                 <i className="fa-solid fa-star-sharp rated" />
@@ -763,22 +791,41 @@ const Shop = () => {
                     })
                   : "No Product Found"}
               </div>
-              <div className="bottom-pagination d-flex justify-content-center">
+              <div className="bottom-pagination d-flex justify-content-between">
+
+                {Product && Product?.length < ProductCount && (
+                  <span className="def-btn totalP text-capitalize"> {lodaing ? "loading ...": "Total Products"} ({ProductCount})</span>
+
+                )}
+
+
+
                 <ul>
                   <li>
-                    <button>
-                      <i className="fa-regular fa-angle-left" />
+                    <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+                      <i className="fa-regular fa-angle-left"  />
                     </button>
                   </li>
+
+
+
+
+                  {Array.from({ length: totalPages }, (_, index) => (
+                  <li  key={index + 1}>  <button
+                 
+                  onClick={() => handlePageChange(index + 1)}
+                  className={currentPage === index + 1 ? 'active' : ''}
+              >
+                  {index + 1}
+              </button></li>
+                  
+                ))}
+
+
+
                   <li>
-                    <button className="active">1</button>
-                  </li>
-                  <li>
-                    <button>2</button>
-                  </li>
-                  <li>
-                    <button>
-                      <i className="fa-regular fa-angle-right" />
+                    <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                      <i className="fa-regular fa-angle-right"  />
                     </button>
                   </li>
                 </ul>

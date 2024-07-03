@@ -5,3 +5,8 @@
  .linkTag{
     color: #ffffff
  }
+ .totalP:hover{
+    background: #fe5502 ;
+    color:  #ffffff;
+
+ }

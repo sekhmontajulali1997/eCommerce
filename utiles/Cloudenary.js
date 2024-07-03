@@ -24,3 +24,11 @@ export const fileDelete = async(publicId) =>{
 
 
 }
+
+// get public id 
+export  const getPublicIdFromUrl = (url)=>{
+  const parts = url.split('/');
+  const publicId = parts[parts.length - 1];
+  const finalpublicId  = publicId.split(".")[0]
+  return finalpublicId;
+}

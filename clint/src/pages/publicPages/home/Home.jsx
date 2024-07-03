@@ -1,6 +1,6 @@
 //import { useState } from "react";
 import { Link } from "react-router-dom";
-import useForm from "../../../../hooks/useFormHooks/useForm";
+import useForm from "../../../hooks/useFormHooks/useForm";
 
 const Home = () => {
   const category = [
